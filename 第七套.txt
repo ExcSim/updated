@@ -21,16 +21,7 @@
 任务A：大数据平台搭建（容器环境）（15分）
 环境说明：
 服务端登录地址详见各任务服务端说明。
-补充说明：宿主机可通过Asbru工具或SSH客户端进行SSH访问；
-相关软件安装包在容器Master节点的/opt/software目录下，请选择对应的安装包进行安装，用不到的可忽略；
-所有任务中应用命令必须采用绝对路径；
-进入Master节点的方式为
-docker exec -it master /bin/bash
-进入Slave1节点的方式为
-docker exec -it slave1 /bin/bash
-进入Slave2节点的方式为
-docker exec -it slave2 /bin/bash
-三个容器节点的root密码均为123456
+补充说明：宿主机及各容器节点可通过Asbru工具或SSH客户端进行SSH访问。
 子任务一：Hadoop 完全分布式安装配置
 本任务需要使用root用户完成相关配置，安装Hadoop需要配置前置环境。命令中要求使用绝对路径，具体要求如下:
 1、	从宿主机/opt目录下将文件hadoop-3.1.3.tar.gz、jdk-8u212-linux-x64.tar.gz复制到容器Master中的/opt/software路径中（若路径不存在，则需新建），将Master节点JDK安装包解压到/opt/module路径中(若路径不存在，则需新建)，将JDK解压命令复制并粘贴至客户端桌面【Release\任务A提交结果.docx】中对应的任务序号下；
@@ -52,12 +43,12 @@ docker exec -it slave2 /bin/bash
 任务B：离线数据处理（25分）
 环境说明：
 服务端登录地址详见各任务服务端说明。
-补充说明：各主机可通过Asbru工具或SSH客户端进行SSH访问；
+补充说明：各节点可通过Asbru工具或SSH客户端进行SSH访问；
 主节点MySQL数据库用户名/密码：root/123456（已配置远程连接）；
 Hive的配置文件位于/opt/apache-hive-2.3.4-bin/conf/  
 Spark任务在Yarn上用Client运行，方便观察日志。
 子任务一：数据抽取
-编写Scala代码，使用Spark将MySQL的shtd_store库中表user_info、sku_info、base_province、base_region、order_info、order_detail的数据增量抽取到Hive的ods库中对应表user_info、sku_info、base_province、base_region、order_info、order_detail中。 
+编写Scala代码，使用Spark将MySQL的shtd_store库中表user_info、sku_info、base_province、base_region、order_info、order_detail的数据增量抽取到Hive的ods库中对应表user_info、sku_info、base_province、base_region、order_info、order_detail中。(若ods库中部分表没有数据，正常抽取即可) 
 1、	抽取shtd_store库中user_info的增量数据进入Hive的ods库中表user_info。根据ods.user_info表中operate_time或create_time作为增量字段(即MySQL中每条数据取这两个时间中较大的那个时间作为增量字段去和ods里的这两个字段中较大的时间进行比较)，只将新增的数据抽入，字段名称、类型不变，同时添加静态分区，分区字段为etl_date，类型为String，且值为当前比赛日的前一天日期（分区字段格式为yyyyMMdd）。使用hive cli执行show partitions ods.user_info命令，将结果截图粘贴至客户端桌面【Release\任务B提交结果.docx】中对应的任务序号下；
 
 2、	抽取shtd_store库中sku_info的增量数据进入Hive的ods库中表sku_info。根据ods.sku_info表中create_time作为增量字段，只将新增的数据抽入，字段名称、类型不变，同时添加静态分区，分区字段为etl_date，类型为String，且值为当前比赛日的前一天日期（分区字段格式为yyyyMMdd）。使用hive cli执行show partitions ods.sku_info命令，将结果截图粘贴至客户端桌面【Release\任务B提交结果.docx】中对应的任务序号下；
@@ -71,7 +62,7 @@ Spark任务在Yarn上用Client运行，方便观察日志。
 6、	抽取shtd_store库中order_detail的增量数据进入Hive的ods库中表order_detail，根据ods.order_detail表中create_time作为增量字段，只将新增的数据抽入，字段名称、类型不变，同时添加静态分区，分区字段为etl_date，类型为String，且值为当前比赛日的前一天日期（分区字段格式为yyyyMMdd）。使用hive cli执行show partitions ods.order_detail命令，将结果截图粘贴至客户端桌面【Release\任务B提交结果.docx】中对应的任务序号下。
 
 子任务二：数据清洗
-编写Scala代码，使用Spark将ods库中相应表数据全量抽取到Hive的dwd库中对应表中。表中有涉及到timestamp类型的，均要求按照yyyy-MM-dd HH:mm:ss，不记录毫秒数，若原数据中只有年月日，则在时分秒的位置添加00:00:00，添加之后使其符合yyyy-MM-dd HH:mm:ss。
+编写Scala代码，使用Spark将ods库中相应表数据全量抽取到Hive的dwd库中对应表中。表中有涉及到timestamp类型的，均要求按照yyyy-MM-dd HH:mm:ss，不记录毫秒数，若原数据中只有年月日，则在时分秒的位置添加00:00:00，添加之后使其符合yyyy-MM-dd HH:mm:ss。(若dwd库中部分表没有数据，正常抽取即可)
 1、	抽取ods库中user_info表中昨天的分区（子任务一生成的分区）数据，并结合dim_user_info最新分区现有的数据，根据id合并数据到dwd库中dim_user_info的分区表（合并是指对dwd层数据进行插入或修改，需修改的数据以id为合并字段，根据operate_time排序取最新的一条），分区字段为etl_date且值与ods库的相对应表该值相等，同时若operate_time为空，则用create_time填充，并添加dwd_insert_user、dwd_insert_time、dwd_modify_user、dwd_modify_time四列,其中dwd_insert_user、dwd_modify_user均填写“user1”。若该条记录第一次进入数仓dwd层则dwd_insert_time、dwd_modify_time均存当前操作时间，并进行数据类型转换。若该数据在进入dwd层时发生了合并修改，则dwd_insert_time时间不变，dwd_modify_time存当前操作时间，其余列存最新的值。使用hive cli执行show partitions dwd.dim_user_info命令，将结果截图粘贴至客户端桌面【Release\任务B提交结果.docx】中对应的任务序号下；
 
 2、	抽取ods库sku_info表中昨天的分区（子任务一生成的分区）数据，并结合dim_sku_info最新分区现有的数据，根据id合并数据到dwd库中dim_sku_info的分区表（合并是指对dwd层数据进行插入或修改，需修改的数据以id为合并字段，根据create_time排序取最新的一条），分区字段为etl_date且值与ods库的相对应表该值相等，并添加dwd_insert_user、dwd_insert_time、dwd_modify_user、dwd_modify_time四列,其中dwd_insert_user、dwd_modify_user均填写“user1”。若该条数据第一次进入数仓dwd层则dwd_insert_time、dwd_modify_time均填写当前操作时间，并进行数据类型转换。若该数据在进入dwd层时发生了合并修改，则dwd_insert_time时间不变，dwd_modify_time存当前操作时间，其余列存最新的值。使用hive cli查询表dim_sku_info的字段id、sku_desc、dwd_insert_user、dwd_modify_time、etl_date，条件为最新分区的数据，id大于等于15且小于等于20，并且按照id升序排序，将结果截图粘贴至客户端桌面【Release\任务B提交结果.docx】中对应的任务序号下；
@@ -86,7 +77,7 @@ Spark任务在Yarn上用Client运行，方便观察日志。
 子任务三：指标计算
 编写Scala代码，使用Spark计算相关指标。
 注：在指标计算中，不考虑订单信息表中order_status字段的值，将所有订单视为有效订单。计算订单金额或订单总金额时只使用final_total_amount字段。需注意dwd所有的维表取最新的分区。
-1、	本任务基于以下2、3、4小题完成，使用Azkaban完成第2、3、4题任务代码的调度。工作流要求，使用shell输出“开始”作为工作流的第一个job（job1），2、3、4题任务为并行任务且它们依赖job1的完成（命名为job2、job3、job4），job2、job3、job4完成之后使用shell输出“结束”作为工作流的最后一个job（endjob），endjob依赖job2、job3、job4，并将最终任务调度完成后的工作流截图，将截图粘贴至客户端桌面【Release\任务B提交结果.docx】中对应的任务序号下；
+1、	本任务基于以下2、3、4小题完成，使用Azkaban完成第2、3、4题任务代码的调度。工作流要求，使用shell输出“开始”作为工作流的第一个job（job1），2、3、4题任务为串行任务且它们依赖job1的完成（命名为job2、job3、job4），job2、job3、job4完成之后使用shell输出“结束”作为工作流的最后一个job（endjob），endjob依赖job2、job3、job4，并将最终任务调度完成后的工作流截图，将截图粘贴至客户端桌面【Release\任务B提交结果.docx】中对应的任务序号下；
 
 2、	根据dwd层表统计每个省每月下单的数量和下单的总金额，并按照year，month，region_id进行分组,按照total_amount降序排序，形成sequence值，将计算结果存入Hive的dws数据库的province_consumption_day_aggr表中（表结构如下），然后使用hive cli根据订单总数、订单总金额、省份表主键均为降序排序，查询出前5条，在查询时对于订单总金额字段将其转为bigint类型（避免用科学计数法展示），将SQL语句复制粘贴至客户端桌面【Release\任务B提交结果.docx】中对应的任务序号下，将执行结果截图粘贴至客户端桌面【Release\任务B提交结果.docx】中对应的任务序号下;
 字段	类型	中文含义	备注
@@ -122,7 +113,7 @@ C省	A省	B省
 任务C：数据挖掘（10分）
 环境说明：
 服务端登录地址详见各任务服务端说明。
-补充说明：各主机可通过Asbru工具或SSH客户端进行SSH访问；
+补充说明：各节点可通过Asbru工具或SSH客户端进行SSH访问；
 主节点MySQL数据库用户名/密码：root/123456（已配置远程连接）；
 Hive的配置文件位于/opt/apache-hive-2.3.4-bin/conf/  
 Spark任务在Yarn上用Client运行，方便观察日志。
@@ -170,7 +161,7 @@ sku_id2	double	用户是否购买过商品3	若用户购买过该商品，则值
 任务D：数据采集与实时计算（20分）
 环境说明：
 服务端登录地址详见各任务服务端说明。
-补充说明：各主机可通过Asbru工具或SSH客户端进行SSH访问；
+补充说明：各节点可通过Asbru工具或SSH客户端进行SSH访问；
 Flink任务在Yarn上用per job模式（即Job分离模式，不采用Session模式），方便Yarn回收资源。
 子任务一：实时数据采集
 1、	在主节点使用Flume采集实时数据生成器10050端口的socket数据，将数据存入到Kafka的Topic中（Topic名称为order，分区数为4），使用Kafka自带的消费者消费order（Topic）中的数据，将前2条数据的结果截图粘贴至客户端桌面【Release\任务D提交结果.docx】中对应的任务序号下；

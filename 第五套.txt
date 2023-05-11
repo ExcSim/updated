@@ -21,16 +21,7 @@
 任务A：大数据平台搭建（容器环境）（15分）
 环境说明：
 服务端登录地址详见各任务服务端说明。
-补充说明：宿主机可通过Asbru工具或SSH客户端进行SSH访问；
-相关软件安装包在宿主机的/opt目录下，请选择对应的安装包进行安装，用不到的可忽略；
-所有任务中应用命令必须采用绝对路径；
-进入Master节点的方式为
-docker exec –it master /bin/bash
-进入Slave1节点的方式为
-docker exec –it slave1 /bin/bash
-进入Slave2节点的方式为
-docker exec –it slave2 /bin/bash
-三个容器节点的root密码均为123456
+补充说明：宿主机及各容器节点可通过Asbru工具或SSH客户端进行SSH访问。
 子任务一：Hadoop 完全分布式安装配置
 本任务需要使用root用户完成相关配置，安装Hadoop需要配置前置环境。命令中要求使用绝对路径，具体要求如下:
 1、	从宿主机/opt目录下将文件hadoop-2.7.7.tar.gz、jdk-8u212-linux-x64.tar.gz复制到容器master中的/opt/software路径中（若路径不存在，则需新建），将master节点JDK安装包解压到/opt/module路径中(若路径不存在，则需新建)，将JDK解压命令复制并粘贴至客户端桌面【Release\任务A提交结果.docx】中对应的任务序号下；
@@ -53,7 +44,7 @@ docker exec –it slave2 /bin/bash
 任务B：离线数据处理（25分）
 环境说明：
 服务端登录地址详见各任务服务端说明。
-补充说明：各主机可通过Asbru工具或SSH客户端进行SSH访问；
+补充说明：各节点可通过Asbru工具或SSH客户端进行SSH访问；
 主节点MySQL数据库用户名/密码：root/123456（已配置远程连接）；
 Hive的配置文件位于/opt/apache-hive-2.3.4-bin/conf/  
 Spark任务在Yarn上用Client运行，方便观察日志。
@@ -65,10 +56,10 @@ Spark任务在Yarn上用Client运行，方便观察日志。
 4、	抽取MySQL的shtd_industry库中MachineData表的全量数据进入Hive的ods库中表machinedata，字段排序、类型不变，同时添加静态分区，分区字段为etldate，类型为String，且值为当前比赛日的前一天日期（分区字段格式为yyyyMMdd）。使用hive cli执行show partitions ods.machinedata命令，将hive cli的执行结果截图粘贴至客户端桌面【Release\任务B提交结果.docx】中对应的任务序号下。
 子任务二：数据清洗
 编写Scala代码，使用Spark将ods库中相应表数据全量抽取到Hive的dwd库中对应表中。表中有涉及到timestamp类型的，均要求按照yyyy-MM-dd HH:mm:ss，不记录毫秒数，若原数据中只有年月日，则在时分秒的位置添加00:00:00，添加之后使其符合yyyy-MM-dd HH:mm:ss。
-1、	抽取ods库中changerecord的全量数据进入Hive的dwd库中表fact_change_record，抽取数据之前需要对数据根据changeid和changemachineid进行联合去重处理，分区字段为etldate且值与ods库的相对应表该值相等，并添加dwd_insert_user、dwd_insert_time、dwd_modify_user、dwd_modify_time四列,其中dwd_insert_user、dwd_modify_user均填写“user1”，dwd_insert_time、dwd_modify_time均填写当前操作时间，并进行数据类型转换。使用hive cli按照change_machine_id降序排序，查询前1条数据，将结果截图粘贴至客户端桌面【Release\任务B提交结果.docx】中对应的任务序号下；
+1、	抽取ods库中changerecord的全量数据进入Hive的dwd库中表fact_change_record，抽取数据之前需要对数据根据changeid和changemachineid进行联合去重处理，分区字段为etldate且值与ods库的相对应表该值相等，并添加dwd_insert_user、dwd_insert_time、dwd_modify_user、dwd_modify_time四列,其中dwd_insert_user、dwd_modify_user均填写“user1”，dwd_insert_time、dwd_modify_time均填写当前操作时间，并进行数据类型转换。使用hive cli按照change_machine_id、change_id降序排序，查询前1条数据，将结果截图粘贴至客户端桌面【Release\任务B提交结果.docx】中对应的任务序号下；
 2、	抽取ods库中basemachine的全量数据进入Hive的dwd库中表dim_machine,抽取数据之前需要对数据根据basemachineid进行去重处理。分区字段为etldate且值与ods库的相对应表该值相等，并添加dwd_insert_user、dwd_insert_time、dwd_modify_user、dwd_modify_time四列,其中dwd_insert_user、dwd_modify_user均填写“user1”，dwd_insert_time、dwd_modify_time均填写当前操作时间，并进行数据类型转换。使用hive cli按照base_machine_id升序排序，查询dim_machine前2条数据，将结果截图粘贴至客户端桌面【Release\任务B提交结果.docx】中对应的任务序号下；
-3、	抽取ods库中producerecord的全量数据进入Hive的dwd库中表fact_produce_record,分区字段为etldate且值与ods库的相对应表该值相等，并添加dwd_insert_user、dwd_insert_time、dwd_modify_user、dwd_modify_time四列,其中dwd_insert_user、dwd_modify_user均填写“user1”，dwd_insert_time、dwd_modify_time均填写当前操作时间，并进行数据类型转换。使用hive cli按照produce_machine_id升序排序，查询fact_produce_record前1条数据，将结果截图粘贴至客户端桌面【Release\任务B提交结果.docx】中对应的任务序号下；
-4、	抽取ods库中machinedata的全量数据进入Hive的dwd库中表fact_machine_data。分区字段为etldate且值与ods库的相对应表该值相等，并添加dwd_insert_user、dwd_insert_time、dwd_modify_user、dwd_modify_time四列,其中dwd_insert_user、dwd_modify_user均填写“user1”，dwd_insert_time、dwd_modify_time均填写当前操作时间，并进行数据类型转换。使用hive cli按照machine_id降序排序，查询前1条数据，将结果截图粘贴至客户端桌面【Release\任务B提交结果.docx】中对应的任务序号下。
+3、	抽取ods库中producerecord的全量数据进入Hive的dwd库中表fact_produce_record,分区字段为etldate且值与ods库的相对应表该值相等，并添加dwd_insert_user、dwd_insert_time、dwd_modify_user、dwd_modify_time四列,其中dwd_insert_user、dwd_modify_user均填写“user1”，dwd_insert_time、dwd_modify_time均填写当前操作时间，并进行数据类型转换。使用hive cli按照produce_machine_id、produce_record_id升序排序，查询fact_produce_record前1条数据，将结果截图粘贴至客户端桌面【Release\任务B提交结果.docx】中对应的任务序号下；
+4、	抽取ods库中machinedata的全量数据进入Hive的dwd库中表fact_machine_data。分区字段为etldate且值与ods库的相对应表该值相等，并添加dwd_insert_user、dwd_insert_time、dwd_modify_user、dwd_modify_time四列,其中dwd_insert_user、dwd_modify_user均填写“user1”，dwd_insert_time、dwd_modify_time均填写当前操作时间，并进行数据类型转换。使用hive cli按照machine_id、machine_record_id降序排序，查询前1条数据，将结果截图粘贴至客户端桌面【Release\任务B提交结果.docx】中对应的任务序号下。
 子任务三：指标计算
 1、	本任务基于以下2、3、4小题完成，使用DolphinScheduler完成第2、3、4题任务代码的调度。工作流要求，使用shell输出“开始”作为工作流的第一个job（job1），2、3、4题任务为并行任务且它们依赖job1的完成（命名为job2、job3、job4），job2、job3、job4完成之后使用shell输出“结束”作为工作流的最后一个job（endjob），endjob依赖job2、job3、job4，并将最终任务调度完成后的工作流截图，将截图粘贴至客户端桌面【Release\任务B提交结果.docx】中对应的任务序号下；
 
@@ -97,7 +88,7 @@ change_end_time	varchar	状态结束时间
 任务C：数据挖掘（10分）
 环境说明：
 服务端登录地址详见各任务服务端说明。
-补充说明：各主机可通过Asbru工具或SSH客户端进行SSH访问；
+补充说明：各节点可通过Asbru工具或SSH客户端进行SSH访问；
 主节点MySQL数据库用户名/密码：root/123456（已配置远程连接）；
 Hive的配置文件位于/opt/apache-hive-2.3.4-bin/conf/  
 Spark任务在Yarn上用Client运行，方便观察日志。
@@ -141,7 +132,7 @@ machine_record_state	double	设备状态	报警为1，其他状态则为0
 任务D：数据采集与实时计算（20分）
 环境说明：
 服务端登录地址详见各任务服务端说明。
-补充说明：各主机可通过Asbru工具或SSH客户端进行SSH访问；
+补充说明：各节点可通过Asbru工具或SSH客户端进行SSH访问；
 Flink任务在Yarn上用per job模式（即Job分离模式，不采用Session模式），方便Yarn回收资源。
 子任务一：实时数据采集
 1、	在主节点使用Flume采集/data_log目录下实时日志文件中的数据，将数据存入到Kafka的Topic中（Topic名称分别为ChangeRecord、ProduceRecord和EnvironmentData，分区数为4），将Flume采集ChangeRecord主题的配置截图粘贴至客户端桌面【Release\任务D提交结果.docx】中对应的任务序号下；
